@@ -1,0 +1,56 @@
+steps:
+  # Build and push the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:$COMMIT_SHA"
+      - "."
+
+  # Push the image to Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:$COMMIT_SHA"
+
+  # Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "clausekit"
+      - "--image"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:$COMMIT_SHA"
+      - "--platform"
+      - "managed"
+      - "--region"
+      - "${_REGION}"
+      - "--allow-unauthenticated"
+      - "--memory"
+      - "512Mi"
+      - "--cpu"
+      - "1"
+      - "--max-instances"
+      - "2"
+      - "--min-instances"
+      - "0"
+      - "--set-env-vars"
+      - "NEXT_PUBLIC_TW_API_KEY=${_TW_API_KEY}"
+      - "--set-env-vars"
+      - "OPENROUTER_API_KEY=${_OPENROUTER_API_KEY}"
+      - "--set-env-vars"
+      - "NEXT_PUBLIC_PLATFORM_ADDRESS=${_PLATFORM_ADDRESS}"
+
+images:
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:$COMMIT_SHA"
+
+substitutions:
+  _REGION: us-central1
+  _REPOSITORY: clausekit
+  _TW_API_KEY: ""
+  _OPENROUTER_API_KEY: ""
+  _PLATFORM_ADDRESS: ""
+
+options:
+  logging: CLOUD_LOGGING_ONLY

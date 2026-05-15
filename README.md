@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ClauseKit
 
-## Getting Started
+AI-powered escrow deployment on Stellar. Upload a service contract and the system extracts milestones, payment amounts, and party information, then deploys a multi-release escrow on the Stellar testnet via the Trustless Work React SDK.
 
-First, run the development server:
+## Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+ClauseKit reads plain-text or PDF service contracts using AI, extracts the escrow structure, and provides a review interface before deploying on-chain. The entire workflow takes under 60 seconds.
+
+## Workflow
+
+1. Drop a freelance contract PDF or paste the text into the upload zone
+2. AI extracts the escrow structure including parties, milestones, and USDC amounts
+3. Review and edit the milestone table as needed
+4. Connect a Stellar wallet (Freighter, xBull, or Albedo on Testnet)
+5. Deploy the escrow by signing the transaction
+6. View the live on-chain escrow via the viewer
+
+## Setup
+
+### Prerequisites
+
+- Node.js 20 or later
+- A Stellar testnet wallet (Freighter recommended)
+- An OpenRouter API key (free tier is sufficient)
+- A Trustless Work testnet API key
+
+### Environment Variables
+
+Copy the `.env.local` file and configure the following keys:
+
+```
+NEXT_PUBLIC_TW_API_KEY=your_tw_testnet_api_key
+OPENROUTER_API_KEY=your_openrouter_key
+DEEPSEEK_API_KEY=your_deepseek_key
+NEXT_PUBLIC_PLATFORM_ADDRESS=your_stellar_testnet_address
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Local Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open http://localhost:3000.
 
-## Learn More
+### Production Deployment (Google Cloud Run)
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+gcloud run deploy clausekit \
+  --source . \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --memory 512Mi \
+  --cpu 1 \
+  --max-instances 2 \
+  --set-env-vars NEXT_PUBLIC_TW_API_KEY=xxx \
+  --set-env-vars OPENROUTER_API_KEY=xxx \
+  --set-env-vars DEEPSEEK_API_KEY=xxx \
+  --set-env-vars NEXT_PUBLIC_PLATFORM_ADDRESS=xxx
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Frontend: Next.js 16 (App Router), TypeScript, TailwindCSS
+- AI: OpenRouter (owl-alpha), DeepSeek fallback
+- Escrow: Trustless Work React SDK (testnet)
+- Wallet: Stellar Wallets Kit (Freighter, xBull, Albedo)
+- PDF parsing: pdfjs-dist (client-side)
+- Deployment: Google Cloud Run
 
-## Deploy on Vercel
+## Links
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Trustless Work Escrow Viewer: https://viewer.trustlesswork.com
+- Trustless Work Documentation: https://docs.trustlesswork.com
+- Stellar Testnet Explorer: https://stellar.expert/explorer/testnet
