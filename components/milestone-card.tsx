@@ -45,24 +45,28 @@ export function MilestoneCard({
 
   const status = milestone.status || "pending";
   const isDisputed = milestone.flags?.disputed;
+  const isApproved = milestone.flags?.approved;
+  const isReleased = milestone.flags?.released;
 
-  const exec = async (label: string, fn: () => Promise<{ status: string; unsignedTransaction?: string }>) => {
+  const exec = async (label: string, fn: () => Promise<any>) => {
     if (!address) return;
     setBusy(true);
     setError(null);
     try {
       const res = await fn();
       if (res.status !== "SUCCESS" || !res.unsignedTransaction) {
-        throw new Error(`Failed to build ${label} transaction`);
+        const msg = res.message || res.error || `Failed to build ${label} transaction`;
+        throw new Error(msg);
       }
       const signed = await signTransaction(res.unsignedTransaction);
       const tx = await sendTransaction(signed);
       if (tx.status !== "SUCCESS") {
-        throw new Error((tx as { message?: string }).message || `${label} failed`);
+        throw new Error((tx as any).message || `${label} failed`);
       }
       onRefresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : `${label} failed`);
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || `${label} failed`;
+      setError(msg);
     } finally {
       setBusy(false);
     }
@@ -70,12 +74,13 @@ export function MilestoneCard({
 
   const statusLabel = (() => {
     if (isDisputed) return { label: "In Dispute", color: "text-red-600" };
+    if (milestone.flags?.released) return { label: "Released", color: "text-green-700" };
+    if (milestone.flags?.approved) return { label: "Approved", color: "text-green-600" };
     switch (status) {
-      case "pending": return { label: "Pending", color: "text-black/40" };
       case "in_review": return { label: "In Review", color: "text-amber-600" };
-      case "approved": return { label: "Approved", color: "text-green-600" };
       case "released": return { label: "Released", color: "text-green-700" };
-      default: return { label: status, color: "text-black/40" };
+      case "pending":
+      default: return { label: "Pending", color: "text-black/40" };
     }
   })();
 
@@ -102,7 +107,7 @@ export function MilestoneCard({
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-2">
-        {status === "pending" && isServiceProvider && !isDisputed && (
+        {status === "pending" && isServiceProvider && !isDisputed && !isApproved && (
           <button
             onClick={() => exec("mark as done", () => changeMilestoneStatus({
               contractId,
@@ -117,7 +122,7 @@ export function MilestoneCard({
           </button>
         )}
 
-        {status === "in_review" && isApprover && !isDisputed && (
+        {status === "in_review" && isApprover && !isDisputed && !isApproved && (
           <button
             onClick={() => exec("approve", () => approveMilestone({
               contractId,
@@ -131,7 +136,7 @@ export function MilestoneCard({
           </button>
         )}
 
-        {status === "approved" && isReleaseSigner && !isDisputed && (
+        {isApproved && !isReleased && isReleaseSigner && !isDisputed && (
           <button
             onClick={() => exec("release funds", () => releaseFunds({
               contractId,

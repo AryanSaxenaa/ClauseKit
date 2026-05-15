@@ -49,6 +49,17 @@ export function EscrowStatusBanner({
     );
   }
 
+  if (status === "active") {
+    return (
+      <div className="border border-blue-200 bg-blue-50 p-4 flex items-center gap-3">
+        <span className="w-2 h-2 rounded-full bg-blue-500" />
+        <span className="text-xs font-nothing tracking-widest text-blue-700 uppercase">
+          Active — Payments in Progress
+        </span>
+      </div>
+    );
+  }
+
   if (balance > 0 && balance < totalAmount) {
     return (
       <div className="border border-amber-200 bg-amber-50 p-4 flex items-center gap-3">

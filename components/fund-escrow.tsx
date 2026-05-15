@@ -30,9 +30,10 @@ export function FundEscrow({
 
   const isFunded = totalAmount > 0 && balance >= totalAmount;
   const isApprover = address === approverAddress;
+  const remaining = totalAmount - balance;
 
   const handleFund = async () => {
-    if (!address) return;
+    if (!address || remaining <= 0) return;
 
     try {
       setFunding(true);
@@ -40,7 +41,7 @@ export function FundEscrow({
 
       const response = await fundEscrow({
         contractId,
-        amount: totalAmount,
+        amount: remaining,
         signer: address,
       }, "multi-release");
 
@@ -92,7 +93,7 @@ export function FundEscrow({
           disabled={funding}
           className="inline-flex items-center gap-2 px-4 py-2 text-xs font-nothing tracking-wide bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-40"
         >
-          {funding ? "Funding..." : `Send ${totalAmount} USDC to Escrow`}
+          {funding ? "Funding..." : `Send ${remaining} USDC to Escrow`}
         </button>
       ) : (
         <p className="text-xs text-black/30 font-nothing tracking-wide">

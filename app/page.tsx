@@ -343,7 +343,7 @@ export default function Home() {
             <span className="text-[11px] text-red-600 font-nothing tracking-widest">
               Try It
             </span>
-            <h2 className="mt-4 !text-xl text-black">
+            <h2 className="mt-4 !text-3xl text-black">
               Drop or describe your deal
               <br />
               <span className="text-black/30">and let AI build the escrow.</span>

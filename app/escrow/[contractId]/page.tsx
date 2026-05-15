@@ -42,7 +42,8 @@ export default function EscrowPage() {
     } finally {
       setLoading(false);
     }
-  }, [contractId, getEscrowByContractIds, getMultipleBalances]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contractId]);
 
   useEffect(() => {
     fetchData();
@@ -73,12 +74,14 @@ export default function EscrowPage() {
     0;
   const roles = escrow.roles as MultiReleaseEscrow["roles"];
   const flags = (escrow as any).flags || {};
+  const hasReleasedMilestones = escrow.milestones?.some((m: any) => m.flags?.released);
 
   // Determine status from flags and milestones for multi-release
   const escrowStatus =
     flags.disputed ? "inDispute"
     : flags.released ? "released"
     : flags.resolved ? "released"
+    : hasReleasedMilestones ? "active"
     : balance >= totalAmount ? "funded"
     : "working";
 
@@ -166,13 +169,15 @@ export default function EscrowPage() {
         </div>
 
         {/* Fund escrow */}
-        <FundEscrow
-          contractId={contractId}
-          totalAmount={totalAmount}
-          balance={balance}
-          approverAddress={roles.approver}
-          onFunded={fetchData}
-        />
+        {!hasReleasedMilestones && (
+          <FundEscrow
+            contractId={contractId}
+            totalAmount={totalAmount}
+            balance={balance}
+            approverAddress={roles.approver}
+            onFunded={fetchData}
+          />
+        )}
 
         {/* Milestones */}
         <div>
