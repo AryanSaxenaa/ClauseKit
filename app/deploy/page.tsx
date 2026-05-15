@@ -7,8 +7,6 @@ import { z } from "zod";
 import { MilestonePreview } from "@/components/milestone-preview";
 import { WalletConnect } from "@/components/wallet-connect";
 import { EscrowDeploy } from "@/components/escrow-deploy";
-import { EscrowResult } from "@/components/escrow-result";
-import { DisputePanel } from "@/components/dispute-panel";
 import { useWallet } from "@/providers/wallet-provider";
 import {
   buildMultiReleasePayload,
@@ -24,7 +22,6 @@ export default function DeployPage() {
   const router = useRouter();
   const { address } = useWallet();
   const [extracted, setExtracted] = useState<ExtractedContract | null>(null);
-  const [contractText, setContractText] = useState<string>("");
   const [milestones, setMilestones] = useState<EditableMilestone[]>([]);
   const [serviceProviderWallet, setServiceProviderWallet] = useState("");
   const [contractId, setContractId] = useState<string | null>(null);
@@ -32,14 +29,12 @@ export default function DeployPage() {
 
   useEffect(() => {
     const stored = localStorage.getItem("clausekit-extracted");
-    const storedText = localStorage.getItem("clausekit-contract-text");
     if (!stored) {
       router.push("/");
       return;
     }
     const parsed: ExtractedContract = JSON.parse(stored);
     setExtracted(parsed);
-    if (storedText) setContractText(storedText);
     setMilestones(aiMilestonesToEditable(parsed, ""));
   }, [router]);
 
@@ -60,7 +55,8 @@ export default function DeployPage() {
   };
 
   const handleDeploySuccess = (id: string) => {
-    setContractId(id);
+    localStorage.setItem("clausekit-contract-id", id);
+    router.push(`/escrow/${id}`);
   };
 
   const handleDeployError = (err: string) => {
@@ -110,7 +106,7 @@ export default function DeployPage() {
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10 space-y-8">
         <div>
-          <h2 className="text-black mb-2">Review Extracted Contract</h2>
+          <h2 className="text-black !text-lg mb-2">Review Extracted Contract</h2>
           <p className="text-sm text-black/50">
             Edit milestones, amounts, and wallet addresses before deploying.
           </p>
@@ -149,16 +145,11 @@ export default function DeployPage() {
             )}
           </div>
         ) : (
-          <div className="space-y-6">
-            <EscrowResult contractId={contractId} />
-
-            <DisputePanel
-              contractId={contractId}
-              contractText={contractText}
-              milestoneIndex={0}
-              milestoneDescription={milestones[0]?.description || ""}
-              milestoneAmount={milestones[0]?.amount || 0}
-            />
+          <div className="flex flex-col items-center gap-4 pt-4">
+            <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs text-black/40 font-nothing tracking-wide">
+              Redirecting to escrow page...
+            </p>
           </div>
         )}
 

@@ -8,12 +8,13 @@ ClauseKit reads plain-text or PDF service contracts using AI, extracts the escro
 
 ## Workflow
 
-1. Drop a freelance contract PDF or paste the text into the upload zone
+1. Upload a contract (PDF or text) or describe the deal in plain English
 2. AI extracts the escrow structure including parties, milestones, and USDC amounts
 3. Review and edit the milestone table as needed
 4. Connect a Stellar wallet (Freighter, xBull, or Albedo on Testnet)
 5. Deploy the escrow by signing the transaction
-6. View the live on-chain escrow via the viewer
+6. Fund the escrow to activate it on-chain
+7. Track milestone status and release funds as work is completed
 
 ## Setup
 
@@ -31,7 +32,6 @@ Copy the `.env.local` file and configure the following keys:
 ```
 NEXT_PUBLIC_TW_API_KEY=your_tw_testnet_api_key
 OPENROUTER_API_KEY=your_openrouter_key
-DEEPSEEK_API_KEY=your_deepseek_key
 NEXT_PUBLIC_PLATFORM_ADDRESS=your_stellar_testnet_address
 ```
 
@@ -57,15 +57,14 @@ gcloud run deploy clausekit \
   --max-instances 2 \
   --set-env-vars NEXT_PUBLIC_TW_API_KEY=xxx \
   --set-env-vars OPENROUTER_API_KEY=xxx \
-  --set-env-vars DEEPSEEK_API_KEY=xxx \
   --set-env-vars NEXT_PUBLIC_PLATFORM_ADDRESS=xxx
 ```
 
 ## Tech Stack
 
 - Frontend: Next.js 16 (App Router), TypeScript, TailwindCSS
-- AI: OpenRouter (owl-alpha), DeepSeek fallback
-- Escrow: Trustless Work React SDK (testnet)
+- AI: OpenRouter (owl-alpha) with ring-2.6 fallback
+- Escrow: Trustless Work React SDK v3 (testnet)
 - Wallet: Stellar Wallets Kit (Freighter, xBull, Albedo)
 - PDF parsing: pdfjs-dist (client-side)
 - Deployment: Google Cloud Run

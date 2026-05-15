@@ -18,13 +18,13 @@ export function buildMultiReleasePayload(
     roles: {
       approver: clientWallet,
       serviceProvider: milestones[0]?.receiver || clientWallet,
-      releaseSigner: clientWallet,
-      disputeResolver: clientWallet,
+      releaseSigner: platformAddress,
+      disputeResolver: platformAddress,
       platformAddress: platformAddress,
     },
     milestones: milestones.map((m) => ({
       description: `${m.title}: ${m.description}`.slice(0, 200),
-      amount: Math.round(m.amount * 10000000),
+      amount: Math.round(m.amount),
       receiver: m.receiver,
     })),
     platformFee: 0,

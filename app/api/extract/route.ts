@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { extractContractFromAI } from "@/lib/ai";
+import { extractContractFromAI, extractDealFromAI } from "@/lib/ai";
 
 export async function POST(request: Request) {
   try {
-    const { text } = await request.json();
+    const { text, mode } = await request.json();
 
     if (!text || typeof text !== "string") {
       return NextResponse.json(
@@ -13,7 +13,10 @@ export async function POST(request: Request) {
     }
 
     const truncated = text.slice(0, 50000);
-    const result = await extractContractFromAI(truncated);
+    const result =
+      mode === "describe"
+        ? await extractDealFromAI(truncated)
+        : await extractContractFromAI(truncated);
     return NextResponse.json(result);
   } catch {
     return NextResponse.json(

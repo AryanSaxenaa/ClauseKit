@@ -95,7 +95,7 @@ export function EscrowDeploy({
             : "bg-red-600 text-white hover:bg-red-700"
         } disabled:opacity-40 disabled:cursor-not-allowed`}
       >
-        {state.step === "success" ? "✅" : ""}{stepText}
+        {state.step === "success" ? "Deployed" : stepText}
       </button>
 
       {isBusy && (

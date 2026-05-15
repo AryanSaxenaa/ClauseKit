@@ -1,6 +1,6 @@
 import type { ExtractionResult } from "@/types/contract";
 
-const EXTRACTION_PROMPT = `Extract the following from this service contract and return ONLY valid JSON, no markdown, no explanation:
+const EXTRACTION_PROMPT = `Extract the following from this contract and return ONLY valid JSON, no markdown, no explanation:
 
 {
   "client": {
@@ -25,10 +25,43 @@ const EXTRACTION_PROMPT = `Extract the following from this service contract and 
 }
 
 Rules:
+- Look for payment schedules, deliverables, milestones, or phase-based payment descriptions.
 - If no explicit USD amounts are found, distribute totalAmount evenly across milestones.
-- If no milestones are found, create 2 generic milestones: "Project Start" (30%) and "Final Delivery" (70%).
+- If no clear milestones are found, create 2 generic milestones: "Project Start" (30%) and "Final Delivery" (70%).
 - Always return at least 2 milestones, at most 5.
-- If the contract is not a service agreement, return { "error": "Not a service contract" }`;
+- Return the full structured object. Only return { "error": "..." } if you cannot identify ANY parties, amounts, or deliverables.`;
+
+const DESCRIBE_PROMPT = `The user will describe a business deal in plain English. Extract a structured escrow plan from it and return ONLY valid JSON, no markdown, no explanation:
+
+{
+  "client": {
+    "name": string,
+    "role": "Client / Buyer / the party that pays"
+  },
+  "serviceProvider": {
+    "name": string,
+    "role": "Freelancer / Vendor / the party that delivers"
+  },
+  "totalAmount": number,
+  "currency": "USDC",
+  "milestones": [
+    {
+      "id": number,
+      "title": string,
+      "description": string,
+      "amount": number,
+      "condition": string
+    }
+  ]
+}
+
+Rules:
+- Infer parties, amounts, and deliverables from the description. Use common sense for missing details.
+- If amounts are mentioned, use them. If a total is mentioned without per-milestone breakdowns, distribute evenly.
+- If no explicit amounts are given, create reasonable estimates based on the described scope.
+- Always return at least 2 milestones, at most 5.
+- Name parties generically if not provided (e.g. "Client", "Freelancer").
+- Return the full structured object. Only return { "error": "..." } if the input is completely incomprehensible.`;
 
 interface AIResponse {
   client?: { name: string; role: string };
@@ -46,8 +79,9 @@ interface AIResponse {
 }
 
 async function callModel(
-  contractText: string,
-  model: string
+  text: string,
+  model: string,
+  prompt: string
 ): Promise<ExtractionResult> {
   const response = await fetch(
     "https://openrouter.ai/api/v1/chat/completions",
@@ -65,11 +99,11 @@ async function callModel(
           {
             role: "system",
             content:
-              "You are a contract analysis assistant. Extract structured data from service contracts. Return only valid JSON.",
+              "You are a contract analysis assistant. Extract structured data including parties, payment schedules, and deliverables.",
           },
           {
             role: "user",
-            content: `${EXTRACTION_PROMPT}\n\n---CONTRACT---\n${contractText}`,
+            content: `${prompt}\n\n---CONTRACT---\n${text}`,
           },
         ],
         response_format: { type: "json_object" },
@@ -109,21 +143,21 @@ async function callModel(
   };
 }
 
-export async function extractContractFromAI(
-  contractText: string
+async function extractWithRetry(
+  text: string,
+  prompt: string
 ): Promise<ExtractionResult> {
-  // Primary: owl-alpha with one retry
   try {
-    return await callModel(contractText, "openrouter/owl-alpha");
+    return await callModel(text, "openrouter/owl-alpha", prompt);
   } catch {
     try {
-      return await callModel(contractText, "openrouter/owl-alpha");
+      return await callModel(text, "openrouter/owl-alpha", prompt);
     } catch {
-      // Fallback: ring-2.6-1t (free via OpenRouter)
       try {
         return await callModel(
-          contractText,
-          "inclusionai/ring-2.6-1t:free"
+          text,
+          "inclusionai/ring-2.6-1t:free",
+          prompt
         );
       } catch {
         return {
@@ -133,4 +167,16 @@ export async function extractContractFromAI(
       }
     }
   }
+}
+
+export async function extractContractFromAI(
+  contractText: string
+): Promise<ExtractionResult> {
+  return extractWithRetry(contractText, EXTRACTION_PROMPT);
+}
+
+export async function extractDealFromAI(
+  dealText: string
+): Promise<ExtractionResult> {
+  return extractWithRetry(dealText, DESCRIBE_PROMPT);
 }

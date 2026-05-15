@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ContractUpload } from "@/components/contract-upload";
+import { DealDescribeInput } from "@/components/deal-describe-input";
 import type { ExtractionResult, ExtractedContract } from "@/types/contract";
 import { isExtractionError } from "@/types/contract";
 import {
@@ -19,9 +20,9 @@ const steps = [
   {
     tag: "01",
     icon: FileText,
-    title: "Drop a Contract",
+    title: "Drop or Describe",
     description:
-      "Upload any PDF or paste a plain-text service agreement. No complex forms — just your contract as-is.",
+      "Upload any PDF or paste a plain-text service agreement, or describe the deal in plain English. No complex forms.",
   },
   {
     tag: "02",
@@ -40,9 +41,9 @@ const steps = [
   {
     tag: "04",
     icon: ExternalLink,
-    title: "Live On-Chain",
+    title: "Full Escrow Lifecycle",
     description:
-      "Your escrow is live on Stellar testnet. Share the viewer link — anyone can verify it on-chain.",
+      "Fund the escrow, track milestone status, approve deliverables, and release payments — all on-chain from a single dashboard.",
   },
 ];
 
@@ -61,6 +62,7 @@ export default function Home() {
   const [isExtracting, setIsExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [inputMode, setInputMode] = useState<"contract" | "describe">("contract");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -75,7 +77,7 @@ export default function Home() {
       const response = await fetch("/api/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, mode: inputMode }),
       });
       const result: ExtractionResult = await response.json();
       if (isExtractionError(result)) {
@@ -358,11 +360,42 @@ export default function Home() {
             </h2>
           </div>
 
+          {/* Input mode switcher */}
+          <div className="flex border border-black/10 overflow-hidden w-fit mx-auto mb-8">
+            <button
+              onClick={() => setInputMode("contract")}
+              className={`px-4 py-2 text-xs tracking-wide transition-colors ${
+                inputMode === "contract"
+                  ? "bg-black text-white font-nothing"
+                  : "text-black/40 hover:text-black"
+              }`}
+            >
+              Upload Contract
+            </button>
+            <button
+              onClick={() => setInputMode("describe")}
+              className={`px-4 py-2 text-xs tracking-wide transition-colors ${
+                inputMode === "describe"
+                  ? "bg-black text-white font-nothing"
+                  : "text-black/40 hover:text-black"
+              }`}
+            >
+              Describe the Deal
+            </button>
+          </div>
+
           <div className="flex justify-center">
-            <ContractUpload
-              onTextReady={handleTextReady}
-              isLoading={isExtracting}
-            />
+            {inputMode === "contract" ? (
+              <ContractUpload
+                onTextReady={handleTextReady}
+                isLoading={isExtracting}
+              />
+            ) : (
+              <DealDescribeInput
+                onTextReady={handleTextReady}
+                isLoading={isExtracting}
+              />
+            )}
           </div>
 
           {isExtracting && (

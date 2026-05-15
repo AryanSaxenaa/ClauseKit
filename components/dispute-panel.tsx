@@ -287,7 +287,7 @@ export function DisputePanel({
       {step === "resolved" && (
         <div className="border border-green-200 bg-green-50 p-4">
           <p className="text-sm font-nothing tracking-wide text-green-700">
-            ✅ Dispute resolved on-chain
+            Dispute resolved on-chain
           </p>
           <p className="text-xs text-green-600 mt-1">
             Funds distributed according to the resolution.
