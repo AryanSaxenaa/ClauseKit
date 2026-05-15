@@ -67,7 +67,10 @@ export default function EscrowPage() {
     );
   }
 
-  const totalAmount = (escrow as any).amount || 0;
+  const totalAmount =
+    (escrow as any).amount ||
+    escrow.milestones?.reduce((sum: number, m: any) => sum + (m.amount || 0), 0) ||
+    0;
   const roles = escrow.roles as MultiReleaseEscrow["roles"];
   const flags = (escrow as any).flags || {};
 

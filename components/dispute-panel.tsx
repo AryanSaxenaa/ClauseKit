@@ -143,11 +143,8 @@ export function DisputePanel({
       setStep("resolving");
       setError(null);
 
-      const totalAmount = Math.round(milestoneAmount * 10000000);
-      const providerAmount = Math.round(
-        resolution.releaseToProvider * 10000000
-      );
-      const clientAmount = totalAmount - providerAmount;
+      const clientAmount = Math.round(resolution.releaseToClient);
+      const providerAmount = Math.round(resolution.releaseToProvider);
 
       const response: EscrowRequestResponse = await resolveDispute(
         {

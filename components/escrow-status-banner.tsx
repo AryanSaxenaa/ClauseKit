@@ -60,7 +60,7 @@ export function EscrowStatusBanner({
     );
   }
 
-  if (balance >= totalAmount) {
+  if (balance >= totalAmount && totalAmount > 0) {
     return (
       <div className="border border-amber-200 bg-amber-50 p-4 flex items-center gap-3">
         <span className="w-2 h-2 rounded-full bg-amber-500" />
@@ -71,5 +71,17 @@ export function EscrowStatusBanner({
     );
   }
 
-  return null;
+  return (
+    <div className="border border-red-200 bg-red-50 p-4 flex items-center gap-3">
+      <span className="w-2 h-2 rounded-full bg-red-500" />
+      <div>
+        <span className="text-xs font-nothing tracking-widest text-red-700 uppercase">
+          Awaiting Funding
+        </span>
+        <p className="text-[10px] text-red-600 mt-0.5">
+          Send {totalAmount} USDC to the escrow contract to activate.
+        </p>
+      </div>
+    </div>
+  );
 }

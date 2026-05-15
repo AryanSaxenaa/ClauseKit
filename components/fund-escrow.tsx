@@ -28,7 +28,7 @@ export function FundEscrow({
   const [funding, setFunding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isFunded = balance >= totalAmount;
+  const isFunded = totalAmount > 0 && balance >= totalAmount;
   const isApprover = address === approverAddress;
 
   const handleFund = async () => {

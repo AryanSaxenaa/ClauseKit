@@ -34,9 +34,9 @@ const steps = [
   {
     tag: "03",
     icon: ShieldCheck,
-    title: "Review & Deploy",
+    title: "Review, Deploy & Fund",
     description:
-      "Connect your Stellar wallet, review the extracted structure, and deploy on-chain in one click.",
+      "Connect your Stellar wallet, review the extracted structure, deploy on-chain, and fund the escrow in one flow.",
   },
   {
     tag: "04",
@@ -183,9 +183,8 @@ export default function Home() {
               </h1>
 
               <p className="text-black/50 text-base md:text-lg leading-relaxed mb-8 animate-[fadeUp_0.6s_ease-out_0.2s] [animation-fill-mode:backwards]">
-                ClauseKit reads any freelance contract with AI, extracts milestones
-                and payment amounts, and deploys a live escrow on Stellar — in under
-                60 seconds.
+                ClauseKit reads any freelance contract or deal description with AI, extracts milestones
+                and payment amounts, then lets you deploy, fund, track, and release the escrow — all on Stellar.
               </p>
 
               <div className="flex flex-wrap gap-3 animate-[fadeUp_0.6s_ease-out_0.3s] [animation-fill-mode:backwards]">
@@ -354,9 +353,9 @@ export default function Home() {
               Try It
             </span>
             <h2 className="mt-4 text-black">
-              Drop your contract
+              Drop or describe your deal
               <br />
-              <span className="text-black/30">and watch it work.</span>
+              <span className="text-black/30">and let AI build the escrow.</span>
             </h2>
           </div>
 
@@ -402,7 +401,7 @@ export default function Home() {
             <div className="mt-8 flex items-center justify-center gap-3 text-black/40 text-sm">
               <div className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
               <span className="font-nothing tracking-wide text-xs">
-                analyzing contract...
+                {inputMode === "describe" ? "analyzing deal..." : "analyzing contract..."}
               </span>
             </div>
           )}
