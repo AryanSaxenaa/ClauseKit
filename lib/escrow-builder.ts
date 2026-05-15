@@ -18,7 +18,7 @@ export function buildMultiReleasePayload(
     roles: {
       approver: clientWallet,
       serviceProvider: milestones[0]?.receiver || clientWallet,
-      releaseSigner: platformAddress,
+      releaseSigner: clientWallet,
       disputeResolver: platformAddress,
       platformAddress: platformAddress,
     },

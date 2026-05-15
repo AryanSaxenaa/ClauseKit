@@ -91,9 +91,13 @@ export default function EscrowPage() {
             <Image src="/logo.png" alt="ClauseKit" width={28} height={28} className="w-6 h-6" />
             <div>
               <h1 className="!text-base font-nothing tracking-wide text-black">Escrow</h1>
-              <p className="text-[10px] text-black/30 font-nothing tracking-widest -mt-0.5">
+              <button
+                onClick={() => navigator.clipboard.writeText(contractId)}
+                className="text-[10px] text-black/30 hover:text-red-600 font-nothing tracking-widest -mt-0.5 transition-colors text-left"
+                title="Click to copy"
+              >
                 {contractId.slice(0, 8)}...{contractId.slice(-4)}
-              </p>
+              </button>
             </div>
           </div>
           <WalletConnect />
@@ -101,6 +105,29 @@ export default function EscrowPage() {
       </header>
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10 space-y-6">
+        {/* Contract ID & Share */}
+        <div className="border border-black/5 bg-white p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-nothing tracking-widest text-black/30 uppercase">
+              Contract ID
+            </span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+              }}
+              className="text-[10px] text-black/30 hover:text-red-600 font-nothing tracking-widest transition-colors"
+            >
+              Copy Link
+            </button>
+          </div>
+          <code className="block text-xs text-black/60 font-mono break-all bg-zinc-50 px-3 py-2 border border-black/5">
+            {contractId}
+          </code>
+          <p className="text-[10px] text-black/30 leading-relaxed">
+            Share this URL with the service provider so they can connect their wallet and mark milestones as done.
+          </p>
+        </div>
+
         {/* External links */}
         <div className="flex items-center gap-4 text-xs text-black/30">
           <a

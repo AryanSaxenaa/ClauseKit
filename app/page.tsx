@@ -263,16 +263,7 @@ export default function Home() {
             </h2>
           </div>
 
-          {/* How it works illustration */}
-          <div className="mb-16 flex justify-center">
-            <Image
-              src="/how-it-works-illustration.png"
-              alt="How ClauseKit works"
-              width={640}
-              height={240}
-              className="w-full max-w-2xl h-auto object-contain"
-            />
-          </div>
+          {/* How it works illustration - removed */}
 
           <div className="grid grid-cols-1 md:grid-cols-2">
             {steps.map((step, i) => (
@@ -352,7 +343,7 @@ export default function Home() {
             <span className="text-[11px] text-red-600 font-nothing tracking-widest">
               Try It
             </span>
-            <h2 className="mt-4 text-black">
+            <h2 className="mt-4 !text-xl text-black">
               Drop or describe your deal
               <br />
               <span className="text-black/30">and let AI build the escrow.</span>

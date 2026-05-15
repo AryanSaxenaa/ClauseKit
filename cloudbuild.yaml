@@ -4,14 +4,14 @@ steps:
     args:
       - "build"
       - "-t"
-      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:$COMMIT_SHA"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:${_TAG}"
       - "."
 
   # Push the image to Artifact Registry
   - name: "gcr.io/cloud-builders/docker"
     args:
       - "push"
-      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:$COMMIT_SHA"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:${_TAG}"
 
   # Deploy to Cloud Run
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -21,7 +21,7 @@ steps:
       - "deploy"
       - "clausekit"
       - "--image"
-      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:$COMMIT_SHA"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:${_TAG}"
       - "--platform"
       - "managed"
       - "--region"
@@ -43,11 +43,12 @@ steps:
       - "NEXT_PUBLIC_PLATFORM_ADDRESS=${_PLATFORM_ADDRESS}"
 
 images:
-  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:$COMMIT_SHA"
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/clausekit:${_TAG}"
 
 substitutions:
   _REGION: us-central1
   _REPOSITORY: clausekit
+  _TAG: latest
   _TW_API_KEY: ""
   _OPENROUTER_API_KEY: ""
   _PLATFORM_ADDRESS: ""
