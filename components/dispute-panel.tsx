@@ -93,6 +93,7 @@ export function DisputePanel({
   }, [alreadyDisputed]);
 
   const fetchAiResolution = async () => {
+    setStep("fetching-ai");
     try {
       const res = await fetch("/api/resolve-dispute", {
         method: "POST",
@@ -106,15 +107,12 @@ export function DisputePanel({
       });
       if (!res.ok) throw new Error("API error");
       const aiResult = await res.json();
-      if (typeof aiResult.releaseToProvider === "number") {
-        setResolution(aiResult);
-        setStep("disputed");
-      } else {
-        throw new Error("Invalid AI response");
-      }
+      if (typeof aiResult.releaseToProvider !== "number") throw new Error("Invalid response");
+      setResolution(aiResult);
+      setStep("disputed");
     } catch {
       setResolution({
-        resolution: "AI resolution unavailable. Manual decision required.",
+        resolution: "AI could not process this dispute automatically.",
         releaseToProvider: milestoneAmount / 2,
         releaseToClient: milestoneAmount / 2,
         reasoning: "Default 50/50 split.",
@@ -170,19 +168,17 @@ export function DisputePanel({
         });
         if (!res.ok) throw new Error("API error");
         const aiResult = await res.json();
-        if (typeof aiResult.releaseToProvider === "number") {
-          setResolution(aiResult);
-        } else {
-          throw new Error("Invalid AI response");
-        }
+        if (typeof aiResult.releaseToProvider !== "number") throw new Error("Invalid response");
+        setResolution(aiResult);
       } catch {
         setResolution({
-          resolution: "Could not process dispute automatically.",
+          resolution: "AI could not process this dispute automatically.",
           releaseToProvider: milestoneAmount / 2,
           releaseToClient: milestoneAmount / 2,
           reasoning: "Default 50/50 split.",
         });
       }
+      // Dispute started, try AI resolution
     } catch (e) {
       const message = e instanceof Error ? e.message : "Dispute failed";
       setError(message);

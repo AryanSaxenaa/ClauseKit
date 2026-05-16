@@ -36,6 +36,8 @@ export async function POST(request: Request) {
     const truncated = contractText.slice(0, 30000);
 
     async function callModel(model: string): Promise<string> {
+      const key = process.env.OPENROUTER_API_KEY;
+      if (!key) throw new Error("OPENROUTER_API_KEY not configured");
       const res = await fetch(
         "https://openrouter.ai/api/v1/chat/completions",
         {
