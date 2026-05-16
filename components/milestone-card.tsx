@@ -21,6 +21,7 @@ interface MilestoneCardProps {
     disputeResolver: string;
   };
   onRefresh: () => void;
+  onRaiseDispute: () => void;
 }
 
 export function MilestoneCard({
@@ -29,6 +30,7 @@ export function MilestoneCard({
   contractId,
   roles,
   onRefresh,
+  onRaiseDispute,
 }: MilestoneCardProps) {
   const { address, signTransaction } = useWallet();
   const { changeMilestoneStatus } = useChangeMilestoneStatus();
@@ -147,6 +149,15 @@ export function MilestoneCard({
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-nothing tracking-wide bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-40"
           >
             Release Funds
+          </button>
+        )}
+
+        {!isReleased && (isServiceProvider || isApprover) && !isDisputed && (
+          <button
+            onClick={onRaiseDispute}
+            className="px-3 py-1.5 text-[10px] font-nothing tracking-wide border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+          >
+            Raise Dispute
           </button>
         )}
 

@@ -28,6 +28,9 @@ interface DisputePanelProps {
   milestoneIndex: number;
   milestoneDescription: string;
   milestoneAmount: number;
+  disputeResolver: string;
+  serviceProvider: string;
+  approver: string;
 }
 
 type DisputeStep =
@@ -56,8 +59,12 @@ export function DisputePanel({
   milestoneIndex,
   milestoneDescription,
   milestoneAmount,
+  disputeResolver,
+  serviceProvider,
+  approver,
 }: DisputePanelProps) {
   const { address, signTransaction } = useWallet();
+  const isResolver = address === disputeResolver;
   const { startDispute } = useStartDispute();
   const { resolveDispute } = useResolveDispute();
   const { sendTransaction } = useSendTransaction();
@@ -151,12 +158,7 @@ export function DisputePanel({
           contractId,
           disputeResolver: address,
           milestoneIndex: milestoneIndex.toString(),
-          distributions: [
-            {
-              address,
-              amount: clientAmount,
-            },
-          ],
+          distributions: [{ address: approver, amount: clientAmount }],
         },
         "multi-release"
       );
@@ -264,20 +266,31 @@ export function DisputePanel({
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={handleResolveDispute}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-nothing tracking-wide bg-red-600 text-white hover:bg-red-700 transition-colors"
-            >
-              Resolve On-Chain
-            </button>
-            <button
-              onClick={() => setStep("idle")}
-              className="px-4 py-2 text-xs text-black/40 hover:text-black tracking-wide transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
+          {isResolver ? (
+            <div className="flex gap-3">
+              <button
+                onClick={handleResolveDispute}
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-nothing tracking-wide bg-red-600 text-white hover:bg-red-700 transition-colors"
+              >
+                Resolve On-Chain
+              </button>
+              <button
+                onClick={() => setStep("idle")}
+                className="px-4 py-2 text-xs text-black/40 hover:text-black tracking-wide transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="border border-black/5 bg-zinc-50 p-3">
+              <p className="text-xs text-black/40 font-nothing tracking-wide">
+                Pending resolution by platform dispute resolver.
+              </p>
+              <p className="text-[10px] text-black/20 mt-1">
+                The neutral third-party resolver ({disputeResolver.slice(0, 6)}...{disputeResolver.slice(-4)}) must sign the on-chain resolution.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

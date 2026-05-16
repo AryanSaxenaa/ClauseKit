@@ -7,7 +7,9 @@ import { WalletConnect } from "@/components/wallet-connect";
 import { EscrowStatusBanner } from "@/components/escrow-status-banner";
 import { FundEscrow } from "@/components/fund-escrow";
 import { MilestoneCard } from "@/components/milestone-card";
-import { ArrowUpRight } from "lucide-react";
+import { DisputePanel } from "@/components/dispute-panel";
+import { ArrowUpRight, Gavel } from "lucide-react";
+import { useWallet } from "@/providers/wallet-provider";
 import {
   useGetEscrowFromIndexerByContractIds,
   useGetMultipleEscrowBalances,
@@ -21,11 +23,19 @@ export default function EscrowPage() {
 
   const { getEscrowByContractIds } = useGetEscrowFromIndexerByContractIds();
   const { getMultipleBalances } = useGetMultipleEscrowBalances();
+  const { address: connectedAddress } = useWallet();
 
   const [escrow, setEscrow] = useState<MultiReleaseEscrow | null>(null);
   const [balance, setBalance] = useState(0);
+  const [contractText, setContractText] = useState("");
+  const [disputeMilestoneIndex, setDisputeMilestoneIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("clausekit-contract-text");
+    if (stored) setContractText(stored);
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -186,22 +196,74 @@ export default function EscrowPage() {
           </h2>
           <div className="space-y-3">
             {escrow.milestones?.map((milestone, i) => (
-              <MilestoneCard
-                key={i}
-                index={i}
-                milestone={milestone}
-                contractId={contractId}
-                roles={{
-                  approver: roles.approver,
-                  serviceProvider: (roles as any).serviceProvider,
-                  releaseSigner: roles.releaseSigner,
-                  disputeResolver: roles.disputeResolver,
-                }}
-                onRefresh={fetchData}
-              />
+              <div key={i} className="space-y-3">
+                <MilestoneCard
+                  index={i}
+                  milestone={milestone}
+                  contractId={contractId}
+                  roles={{
+                    approver: roles.approver,
+                    serviceProvider: (roles as any).serviceProvider,
+                    releaseSigner: roles.releaseSigner,
+                    disputeResolver: roles.disputeResolver,
+                  }}
+                  onRefresh={fetchData}
+                  onRaiseDispute={() => setDisputeMilestoneIndex(i)}
+                />
+                {disputeMilestoneIndex === i && (
+                  <DisputePanel
+                    contractId={contractId}
+                    contractText={contractText}
+                    milestoneIndex={i}
+                    milestoneDescription={milestone.description}
+                    milestoneAmount={milestone.amount}
+                    disputeResolver={roles.disputeResolver}
+                    serviceProvider={(roles as any).serviceProvider}
+                    approver={roles.approver}
+                  />
+                )}
+              </div>
             ))}
           </div>
         </div>
+
+        {/* Resolver dashboard — only visible to the dispute resolver */}
+        {(() => {
+          const disputedEntries = escrow.milestones
+            ?.map((m: any, i: number) => ({ milestone: m, originalIndex: i }))
+            .filter((entry) => entry.milestone.flags?.disputed && !entry.milestone.flags?.resolved);
+          if (!disputedEntries?.length) return null;
+          const isThisResolver = connectedAddress === roles.disputeResolver;
+          if (!isThisResolver) return null;
+
+          return (
+            <div className="border border-amber-300 bg-amber-50/30 p-6 space-y-3">
+              <div className="flex items-center gap-2 text-amber-700">
+                <Gavel className="w-3.5 h-3.5" />
+                <h3 className="text-sm font-nothing tracking-widest uppercase">
+                  Pending Disputes — Your Resolution Required
+                </h3>
+              </div>
+              <p className="text-xs text-amber-600 leading-relaxed">
+                As the dispute resolver ({roles.disputeResolver.slice(0, 6)}...
+                {roles.disputeResolver.slice(-4)}), you are the only party
+                authorized to sign the on-chain resolution. Review the AI
+                recommendation and execute the settlement.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {disputedEntries.map((entry) => (
+                  <button
+                    key={entry.originalIndex}
+                    onClick={() => setDisputeMilestoneIndex(entry.originalIndex)}
+                    className="px-3 py-1.5 text-xs font-nothing tracking-wide border border-amber-300 text-amber-800 bg-white hover:bg-amber-100 transition-colors"
+                  >
+                    Review Milestone {entry.originalIndex + 1}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Back */}
         <div className="pt-4">
