@@ -66,11 +66,11 @@ Actions are role-gated — only the authorized wallet can advance the milestone 
 Either party can raise a dispute for any non-released milestone from the escrow dashboard. The flow is fully on-chain and AI-assisted:
 
 1. **Raise** — Enter the dispute reason and sign the transaction. The milestone moves to an on-chain disputed state.
-2. **AI Analysis** — The system sends the original contract text, the dispute reason, and the milestone details to an AI model. A recommended settlement split (provider vs. client) is returned within seconds.
-3. **Resolver Review** — A dedicated resolver dashboard surfaces pending disputes only when the dispute resolver wallet is connected. Role-gating ensures no other party can execute the resolution.
-4. **Resolve** — The dispute resolver signs the on-chain settlement transaction. Funds for that milestone are distributed according to the AI recommendation: the client portion returns to the approver, and the remainder is released to the service provider.
+2. **AI Analysis** — The system sends the original contract text, the dispute reason, and the milestone details to the AI (owl-alpha, with laguna-m.1 and cobuddy fallbacks). A recommended settlement split is returned within seconds. If all AI models are unavailable, a guaranteed 50/50 fallback ensures amounts are always displayed.
+3. **Resolver Review** — The dispute resolver connects their wallet and sees a dedicated dashboard listing all pending disputes. Clicking any milestone auto-scrolls to the DisputePanel, which auto-detects the on-chain disputed state and fetches the AI recommendation immediately — no need to re-enter the reason.
+4. **Resolve** — The dispute resolver signs the on-chain settlement transaction. Funds for that milestone are distributed: the client portion returns to the approver, and the remainder is released to the service provider.
 
-The dispute resolver is a neutral third-party address configured at deployment time (typically the platform address). This separation of concerns ensures neither the contractor nor the freelancer can unilaterally resolve a dispute.
+The dispute resolver is a neutral third-party address configured at deployment time (typically the platform address). Role-gating ensures neither the contractor nor the freelancer can unilaterally resolve a dispute.
 
 ## Architecture
 
@@ -183,7 +183,8 @@ gcloud run deploy clausekit \
   --image us-central1-docker.pkg.dev/clausekit/clausekit/clausekit:latest \
   --region us-central1 \
   --project clausekit \
-  --allow-unauthenticated
+  --allow-unauthenticated \
+  --set-env-vars OPENROUTER_API_KEY=your_openrouter_key
 ```
 
 ## Technology Stack
@@ -193,7 +194,7 @@ gcloud run deploy clausekit \
 | Frontend Framework | Next.js 16 (App Router) |
 | Language | TypeScript |
 | Styling | TailwindCSS v4 |
-| AI / NLP | OpenRouter (owl-alpha) with ring-2.6 fallback |
+| AI / NLP | OpenRouter (owl-alpha) with laguna-m.1 and cobuddy fallbacks |
 | Escrow Protocol | Trustless Work React SDK v3.0.5 (Testnet) |
 | Wallet Integration | Stellar Wallets Kit (Freighter, xBull, Albedo) |
 | PDF Parsing | pdfjs-dist (client-side extraction) |
