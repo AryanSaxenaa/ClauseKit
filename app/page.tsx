@@ -211,9 +211,9 @@ export default function Home() {
               {/* Stats row */}
               <div className="mt-12 grid grid-cols-3 gap-8 max-w-md animate-[fadeUp_0.6s_ease-out_0.4s] [animation-fill-mode:backwards]">
                 {[
-                  { value: "<60s", label: "Deploy Time" },
-                  { value: "$0", label: "Gas per Deploy" },
-                  { value: "2M+", label: "Context Window" },
+                  { value: "<60s", label: "End-to-End Time" },
+                  { value: "$0", label: "Gas on Testnet" },
+                  { value: "3 Roles", label: "Smart Contract Security" },
                 ].map((stat) => (
                   <div key={stat.label} className="border-l-2 border-red-200 pl-4">
                     <div className="text-xl text-black font-nothing tracking-tight">
@@ -228,13 +228,17 @@ export default function Home() {
             </div>
 
             {/* Hero illustration */}
-            <div className="hidden lg:block flex-shrink-0 -mr-20">
+            <div className="hidden lg:block flex-shrink-0 -mr-20 relative">
               <Image
                 src="/hero-illustration.png"
                 alt="Contract to escrow illustration"
                 width={800}
                 height={800}
                 className="w-[650px] xl:w-[750px] h-auto"
+                style={{
+                  maskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 55%, transparent 100%)",
+                  WebkitMaskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 55%, transparent 100%)",
+                }}
                 priority
               />
             </div>
