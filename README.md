@@ -1,35 +1,37 @@
 # ClauseKit
 
-Drop a contract. AI deploys the escrow.
+The AI that reads contracts, builds escrows, and resolves disputes.
 
-ClauseKit turns any service agreement — whether it is a PDF, a wall of legal text, or a two-sentence Slack message — into a live, on-chain escrow on the Stellar blockchain in under sixty seconds. No manual data entry. No sign-up flows. No bank accounts.
+ClauseKit is an AI-first contract engine. It reads any service agreement — a PDF, a wall of legal text, or a two-sentence description in plain English — understands the legal structure, extracts parties, milestones, and payment conditions automatically, and deploys a live escrow on the Stellar blockchain in under sixty seconds. No forms. No manual entry. No sign-ups.
 
-Built on the **Trustless Work Escrow Protocol** and **Stellar Soroban smart contracts**, ClauseKit eliminates the trust gap between freelancers and clients by cryptographically locking payments behind milestones and releasing them only when the work is verified.
+When disputes arise, the AI reads the original contract again — it analyzes the claim against the actual agreement terms and recommends a settlement split based on what the contract says, not what a support agent guesses. A neutral on-chain resolver signs, and funds are distributed automatically.
+
+Built on the **Trustless Work Escrow Protocol** and **Stellar Soroban smart contracts**, ClauseKit eliminates the trust gap between freelancers and clients with AI-powered contract understanding, role-gated on-chain enforcement, and automated dispute resolution.
 
 > **Live at:** https://clausekit-794944941372.us-central1.run.app · **Source:** https://github.com/AryanSaxenaa/ClauseKit
 
 ---
 
-## Why ClauseKit
+## Why AI-First
 
-Freelance platforms take 10–20% in fees and still leave disputes unresolved for weeks. Manual escrows require lawyers, notarized contracts, and both parties to trust a central intermediary. ClauseKit replaces all of that with a single flow:
+Most escrow platforms hold money. ClauseKit understands agreements. The AI is not a feature bolted on — it powers every stage of the lifecycle:
 
-- **Zero-platform-fee escrows** deployed directly on Stellar testnet
-- **AI reads the contract** — parties, milestones, amounts, and conditions are extracted automatically
-- **No human intermediary** — the smart contract enforces milestones, not a platform
-- **End-to-end on-chain** — deploy, fund, approve, release, and dispute from one dashboard
-- **No database, no sign-ups** — the entire application is stateless; contract state lives on-chain
+- **AI reads the contract** — not just keywords; it understands legal structure, identifies parties, extracts milestones with dollar amounts, and pulls release conditions from the contract language itself
+- **AI resolves disputes** — when either party raises a dispute, the AI re-reads the original contract, analyzes the claim against the actual terms, and recommends a settlement split — contract-aware resolution, not a generic 50/50 guess
+- **No forms, no manual entry** — drop a PDF, paste text, or describe a deal in plain English; the AI builds the entire escrow structure automatically
+- **Role-gated on-chain enforcement** — three roles (approver, service provider, dispute resolver) secure every action; the smart contract enforces the AI's extracted structure, not a platform
+- **No database, no sign-ups** — the entire application is stateless; contract state lives on-chain and AI processes happen at extraction time
 
 ## How It Works
 
 1. **Drop or describe** — Upload a PDF, paste a contract, or describe the deal in plain English
-2. **AI extracts** the escrow structure — parties, milestones, payment amounts, and conditions
-3. **Review and edit** — Adjust milestones and wallet addresses before committing
-4. **Deploy on-chain** — Sign a single Stellar transaction to create the Soroban smart contract
+2. **AI understands** the contract — not keyword matching; full legal structure extraction: parties, milestones, amounts, and conditions
+3. **Review and edit** — Adjust the AI's extracted milestones and wallet addresses before committing
+4. **Deploy on-chain** — Sign a single Stellar transaction; the AI's understanding becomes a Soroban smart contract
 5. **Fund the escrow** — Transfer the total contract value in USDC to the contract
 6. **Track milestones** — Both parties see live status: Pending → In Review → Approved → Released
-7. **Release payments** — Funds transfer atomically when a milestone is approved and released
-8. **Dispute if needed** — AI-assisted on-chain dispute resolution for any milestone
+7. **Release payments** — Funds transfer atomically when milestones are approved and released
+8. **Dispute with AI** — Either party raises a dispute; the AI re-reads the original contract and recommends a settlement; the neutral resolver signs, and funds distribute automatically
 
 ## Live Deployment
 
