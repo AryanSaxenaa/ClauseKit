@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +31,7 @@ interface DisputePanelProps {
   disputeResolver: string;
   serviceProvider: string;
   approver: string;
+  alreadyDisputed?: boolean;
 }
 
 type DisputeStep =
@@ -40,6 +41,7 @@ type DisputeStep =
   | "signing-start"
   | "sending-start"
   | "disputed"
+  | "fetching-ai"
   | "resolving"
   | "signing-resolve"
   | "sending-resolve"
@@ -62,6 +64,7 @@ export function DisputePanel({
   disputeResolver,
   serviceProvider,
   approver,
+  alreadyDisputed = false,
 }: DisputePanelProps) {
   const { address, signTransaction } = useWallet();
   const isResolver = address === disputeResolver;
@@ -69,7 +72,7 @@ export function DisputePanel({
   const { resolveDispute } = useResolveDispute();
   const { sendTransaction } = useSendTransaction();
 
-  const [step, setStep] = useState<DisputeStep>("idle");
+  const [step, setStep] = useState<DisputeStep>(alreadyDisputed ? "disputed" : "idle");
   const [error, setError] = useState<string | null>(null);
   const [resolution, setResolution] = useState<DisputeResolution | null>(null);
 
@@ -80,6 +83,45 @@ export function DisputePanel({
   } = useForm<DisputeForm>({
     resolver: zodResolver(disputeSchema),
   });
+
+  // Auto-fetch AI resolution when milestone is already disputed
+  useEffect(() => {
+    if (!alreadyDisputed || resolution) return;
+    setStep("fetching-ai");
+    fetchAiResolution();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alreadyDisputed]);
+
+  const fetchAiResolution = async () => {
+    try {
+      const res = await fetch("/api/resolve-dispute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contractText,
+          disputeReason: "Disputed on-chain — resolution requested",
+          disputedAmount: milestoneAmount,
+          milestoneDescription,
+        }),
+      });
+      if (!res.ok) throw new Error("API error");
+      const aiResult = await res.json();
+      if (typeof aiResult.releaseToProvider === "number") {
+        setResolution(aiResult);
+        setStep("disputed");
+      } else {
+        throw new Error("Invalid AI response");
+      }
+    } catch {
+      setResolution({
+        resolution: "AI resolution unavailable. Manual decision required.",
+        releaseToProvider: milestoneAmount / 2,
+        releaseToClient: milestoneAmount / 2,
+        reasoning: "Default 50/50 split.",
+      });
+      setStep("disputed");
+    }
+  };
 
   const onStartDispute = async (data: DisputeForm) => {
     if (!address) return;
@@ -126,8 +168,13 @@ export function DisputePanel({
             milestoneDescription,
           }),
         });
+        if (!res.ok) throw new Error("API error");
         const aiResult = await res.json();
-        setResolution(aiResult);
+        if (typeof aiResult.releaseToProvider === "number") {
+          setResolution(aiResult);
+        } else {
+          throw new Error("Invalid AI response");
+        }
       } catch {
         setResolution({
           resolution: "Could not process dispute automatically.",
@@ -187,7 +234,7 @@ export function DisputePanel({
     }
   };
 
-  const isBusy = ["starting-dispute", "signing-start", "sending-start", "resolving", "signing-resolve", "sending-resolve"].includes(step);
+  const isBusy = ["starting-dispute", "signing-start", "sending-start", "fetching-ai", "resolving", "signing-resolve", "sending-resolve"].includes(step);
 
   return (
     <div className="border border-black/5 bg-white p-6">
@@ -237,7 +284,8 @@ export function DisputePanel({
         <div className="flex items-center gap-2 text-black/40">
           <div className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
           <span className="text-xs font-nothing tracking-wide">
-            {step.startsWith("starting") || step.startsWith("resolving") ? "Building transaction..." :
+            {step === "fetching-ai" ? "AI analyzing dispute..." :
+             step.startsWith("starting") || step.startsWith("resolving") ? "Building transaction..." :
              step.includes("signing") ? "Sign with wallet..." :
              step.includes("sending") ? "Broadcasting..." : ""}
           </span>

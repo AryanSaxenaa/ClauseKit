@@ -34,8 +34,9 @@ export default function EscrowPage() {
   const scrollToDispute = (index: number) => {
     setDisputeMilestoneIndex(index);
     setTimeout(() => {
-      disputeRef.current?.querySelector(`[data-milestone="${index}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 100);
+      const el = disputeRef.current?.querySelector(`[data-milestone="${index}"]`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 200);
   };
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -228,6 +229,7 @@ export default function EscrowPage() {
                     disputeResolver={roles.disputeResolver}
                     serviceProvider={(roles as any).serviceProvider}
                     approver={roles.approver}
+                    alreadyDisputed={!!milestone.flags?.disputed}
                   />
                 )}
               </div>
