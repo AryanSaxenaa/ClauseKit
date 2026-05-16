@@ -9,7 +9,7 @@ When disputes arise, the AI reads the original contract again — it analyzes th
 Built on the **Trustless Work Escrow Protocol** and **Stellar Soroban smart contracts**, ClauseKit eliminates the trust gap between freelancers and clients with AI-powered contract understanding, role-gated on-chain enforcement, and automated dispute resolution.
 
 > **Live at:** https://clausekit-794944941372.us-central1.run.app · **Source:** https://github.com/AryanSaxenaa/ClauseKit
-
+> **Demo** https://youtu.be/nHjNVdNaKGc
 ---
 
 ## The AI Difference
