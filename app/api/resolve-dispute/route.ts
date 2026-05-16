@@ -16,13 +16,15 @@ Rules:
 - If the contract is unclear, favor a 50/50 split.`;
 
 export async function POST(request: Request) {
+  let disputedAmount = 1;
   try {
     const {
       contractText,
       disputeReason,
-      disputedAmount,
+      disputedAmount: rawAmount,
       milestoneDescription,
     } = await request.json();
+    disputedAmount = Number(rawAmount) || 1;
 
     if (!contractText || !disputeReason) {
       return NextResponse.json(
@@ -33,51 +35,74 @@ export async function POST(request: Request) {
 
     const truncated = contractText.slice(0, 30000);
 
-    const response = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://clausekit.app",
-          "X-Title": "ClauseKit",
-        },
-        body: JSON.stringify({
-          model: "openrouter/owl-alpha",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are a dispute resolution assistant for escrow contracts. Return only valid JSON.",
-            },
-            {
-              role: "user",
-              content: `Original Contract:\n${truncated}\n\nDisputed Milestone: ${milestoneDescription || "N/A"}\nAmount in dispute: ${disputedAmount || "unknown"} USDC\n\nDispute Reason: ${disputeReason}\n\n${RESOLVE_PROMPT}`,
-            },
-          ],
-          response_format: { type: "json_object" },
-          temperature: 0.1,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`OpenRouter returned ${response.status}`);
+    async function callModel(model: string): Promise<string> {
+      const res = await fetch(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://clausekit.app",
+            "X-Title": "ClauseKit",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are a dispute resolution assistant for escrow contracts. Return only valid JSON.",
+              },
+              {
+                role: "user",
+                content: `Original Contract:\n${truncated}\n\nDisputed Milestone: ${milestoneDescription || "N/A"}\nAmount in dispute: ${disputedAmount || "unknown"} USDC\n\nDispute Reason: ${disputeReason}\n\n${RESOLVE_PROMPT}`,
+              },
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.1,
+          }),
+        }
+      );
+      if (!res.ok) throw new Error(`OpenRouter returned ${res.status} for ${model}`);
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) throw new Error(`Empty response from ${model}`);
+      return content;
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) throw new Error("Empty response");
+    let content: string;
+    try {
+      content = await callModel("openrouter/owl-alpha");
+    } catch {
+      try {
+        content = await callModel("openrouter/owl-alpha");
+      } catch {
+        content = await callModel("inclusionai/ring-2.6-1t:free");
+      }
+    }
 
     const result = JSON.parse(content);
+
+    if (
+      typeof result.resolution !== "string" ||
+      typeof result.releaseToProvider !== "number" ||
+      typeof result.releaseToClient !== "number"
+    ) {
+      throw new Error("Incomplete AI response");
+    }
+
+    result.releaseToProvider = Math.round(result.releaseToProvider);
+    result.releaseToClient = Math.round(result.releaseToClient);
+
     return NextResponse.json(result);
   } catch {
+    const half = Math.round(disputedAmount / 2);
     return NextResponse.json(
       {
         resolution: "Unable to process dispute automatically.",
-        releaseToProvider: 0,
-        releaseToClient: 0,
+        releaseToProvider: half,
+        releaseToClient: half,
         reasoning: "Default 50/50 split due to processing error.",
       },
       { status: 200 }
