@@ -60,7 +60,15 @@ Each milestone progresses through four states:
 Actions are role-gated — only the authorized wallet can advance the milestone state.
 
 ### Dispute
-Either party can raise a dispute for any milestone. An AI-powered resolution service analyzes the original contract terms and recommends a settlement. The dispute resolver address signs the on-chain resolution.
+
+Either party can raise a dispute for any non-released milestone from the escrow dashboard. The flow is fully on-chain and AI-assisted:
+
+1. **Raise** — Enter the dispute reason and sign the transaction. The milestone moves to an on-chain disputed state.
+2. **AI Analysis** — The system sends the original contract text, the dispute reason, and the milestone details to an AI model. A recommended settlement split (provider vs. client) is returned within seconds.
+3. **Resolver Review** — A dedicated resolver dashboard surfaces pending disputes only when the dispute resolver wallet is connected. Role-gating ensures no other party can execute the resolution.
+4. **Resolve** — The dispute resolver signs the on-chain settlement transaction. Funds for that milestone are distributed according to the AI recommendation: the client portion returns to the approver, and the remainder is released to the service provider.
+
+The dispute resolver is a neutral third-party address configured at deployment time (typically the platform address). This separation of concerns ensures neither the contractor nor the freelancer can unilaterally resolve a dispute.
 
 ## Architecture
 
