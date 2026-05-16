@@ -12,20 +12,31 @@ Built on the **Trustless Work Escrow Protocol** and **Stellar Soroban smart cont
 
 ---
 
-## Why AI-First
+## The AI Difference
 
-Most escrow platforms hold money. ClauseKit understands agreements. The AI is not a feature bolted on — it powers every stage of the lifecycle:
+ClauseKit doesn't just hold money — it understands agreements. Three AI systems power the entire lifecycle:
 
-- **AI reads the contract** — not just keywords; it understands legal structure, identifies parties, extracts milestones with dollar amounts, and pulls release conditions from the contract language itself
-- **AI resolves disputes** — when either party raises a dispute, the AI re-reads the original contract, analyzes the claim against the actual terms, and recommends a settlement split — contract-aware resolution, not a generic 50/50 guess
-- **No forms, no manual entry** — drop a PDF, paste text, or describe a deal in plain English; the AI builds the entire escrow structure automatically
-- **Role-gated on-chain enforcement** — three roles (approver, service provider, dispute resolver) secure every action; the smart contract enforces the AI's extracted structure, not a platform
-- **No database, no sign-ups** — the entire application is stateless; contract state lives on-chain and AI processes happen at extraction time
+### 1. AI Contract Extraction
+Drop a PDF, paste legal text, or describe a deal in plain English. The AI doesn't keyword-match — it parses legal structure, identifies parties by role, extracts every milestone with dollar amounts, and pulls release conditions from the actual contract language. A 20-page document becomes a structured escrow in seconds. No forms, no data entry, no manual milestone typing.
+
+**Models:** `openrouter/owl-alpha` (primary) → `poolside/laguna-m.1:free` → `baidu/cobuddy:free` (fallbacks)
+
+### 2. AI Dispute Resolution
+When either party raises a dispute, the AI re-reads the original contract. It analyzes the claim against the actual agreement terms — not generic rules, not a support agent's guess. It cross-references the dispute reason with the contract clauses and recommends a precise settlement split with reasoning rooted in the contract language. The receiving party sees "Release $X to provider, Return $Y to client" with the legal basis for the decision.
+
+**Models:** `openrouter/owl-alpha` (primary) → `poolside/laguna-m.1:free` → `baidu/cobuddy:free` (fallbacks) → guaranteed 50/50 split if all models unavailable
+
+### 3. AI Deal Description
+No contract? Describe the deal in plain English. "I need a website built for $3,000 with three milestones" — the AI infers the parties, creates reasonable milestones, distributes amounts, and builds the escrow structure. No legal document required.
+
+**Models:** `openrouter/owl-alpha` (primary) → `poolside/laguna-m.1:free` → `baidu/cobuddy:free` (fallbacks)
+
+---
 
 ## How It Works
 
 1. **Drop or describe** — Upload a PDF, paste a contract, or describe the deal in plain English
-2. **AI understands** the contract — not keyword matching; full legal structure extraction: parties, milestones, amounts, and conditions
+2. **AI understands** the contract — legal structure extraction: parties, milestones, amounts, and conditions
 3. **Review and edit** — Adjust the AI's extracted milestones and wallet addresses before committing
 4. **Deploy on-chain** — Sign a single Stellar transaction; the AI's understanding becomes a Soroban smart contract
 5. **Fund the escrow** — Transfer the total contract value in USDC to the contract
