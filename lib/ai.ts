@@ -156,14 +156,22 @@ async function extractWithRetry(
       try {
         return await callModel(
           text,
-          "inclusionai/ring-2.6-1t:free",
+          "poolside/laguna-m.1:free",
           prompt
         );
       } catch {
-        return {
-          error:
-            "AI extraction failed. Please check your API keys and try again.",
-        };
+        try {
+          return await callModel(
+            text,
+            "baidu/cobuddy:free",
+            prompt
+          );
+        } catch {
+          return {
+            error:
+              "AI extraction failed. Please check your API keys and try again.",
+          };
+        }
       }
     }
   }

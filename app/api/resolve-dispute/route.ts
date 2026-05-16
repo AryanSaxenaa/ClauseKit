@@ -78,7 +78,11 @@ export async function POST(request: Request) {
       try {
         content = await callModel("openrouter/owl-alpha");
       } catch {
-        content = await callModel("inclusionai/ring-2.6-1t:free");
+        try {
+          content = await callModel("poolside/laguna-m.1:free");
+        } catch {
+          content = await callModel("baidu/cobuddy:free");
+        }
       }
     }
 

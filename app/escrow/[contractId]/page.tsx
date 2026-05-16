@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { WalletConnect } from "@/components/wallet-connect";
@@ -29,6 +29,14 @@ export default function EscrowPage() {
   const [balance, setBalance] = useState(0);
   const [contractText, setContractText] = useState("");
   const [disputeMilestoneIndex, setDisputeMilestoneIndex] = useState<number | null>(null);
+  const disputeRef = useRef<HTMLDivElement>(null);
+
+  const scrollToDispute = (index: number) => {
+    setDisputeMilestoneIndex(index);
+    setTimeout(() => {
+      disputeRef.current?.querySelector(`[data-milestone="${index}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  };
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -190,13 +198,13 @@ export default function EscrowPage() {
         )}
 
         {/* Milestones */}
-        <div>
+        <div ref={disputeRef}>
           <h2 className="text-sm text-black/50 font-nothing tracking-widest mb-4 uppercase">
             Milestones
           </h2>
           <div className="space-y-3">
             {escrow.milestones?.map((milestone, i) => (
-              <div key={i} className="space-y-3">
+              <div key={i} className="space-y-3" data-milestone={i}>
                 <MilestoneCard
                   index={i}
                   milestone={milestone}
@@ -254,7 +262,7 @@ export default function EscrowPage() {
                 {disputedEntries.map((entry) => (
                   <button
                     key={entry.originalIndex}
-                    onClick={() => setDisputeMilestoneIndex(entry.originalIndex)}
+                    onClick={() => scrollToDispute(entry.originalIndex)}
                     className="px-3 py-1.5 text-xs font-nothing tracking-wide border border-amber-300 text-amber-800 bg-white hover:bg-amber-100 transition-colors"
                   >
                     Review Milestone {entry.originalIndex + 1}
